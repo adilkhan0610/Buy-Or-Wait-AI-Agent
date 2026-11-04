@@ -10,6 +10,8 @@ from .currency_converter import (
     InvalidCurrencyError,
     InvalidAmountError,
 )
+from .message_analyzer import MessageAnalyzer, MessageFinding
+from .image_analyzer import ImageAnalyzer, ImageFinding, VERIFIED_IMAGE_EXTRACTIONS
 
 __all__ = [
     "DataLoader",
@@ -24,4 +26,9 @@ __all__ = [
     "ExchangeRateNotFoundError",
     "InvalidCurrencyError",
     "InvalidAmountError",
+    "MessageAnalyzer",
+    "MessageFinding",
+    "ImageAnalyzer",
+    "ImageFinding",
+    "VERIFIED_IMAGE_EXTRACTIONS",
 ]
