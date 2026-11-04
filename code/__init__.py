@@ -24,6 +24,10 @@ from .cash_flow_engine import (
     DailyCashFlow,
     ForecastResult,
 )
+from .affordability_engine import (
+    AffordabilityEngine,
+    AffordabilityDecision,
+)
 
 __all__ = [
     "DataLoader",
@@ -51,4 +55,6 @@ __all__ = [
     "CashFlowEngine",
     "DailyCashFlow",
     "ForecastResult",
+    "AffordabilityEngine",
+    "AffordabilityDecision",
 ]

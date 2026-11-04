@@ -397,6 +397,21 @@ class CashFlowEngine:
 
         return streams
 
+    def get_max_safe_amount_today(
+        self,
+        state: ReconstructedFinancialState,
+        request_date: str,
+        horizon_days: int = 90,
+    ) -> Decimal:
+        """Calculate the absolute maximum amount safe to pay today (unconstrained by requested amount).
+
+        Evaluates the lowest cushion above minimum balance across the 90-day forecast horizon.
+        Returns 0 if any baseline breach occurs.
+        """
+        baseline = self.run_forecast(state, start_date=request_date, horizon_days=horizon_days)
+        min_cushion = baseline.minimum_cushion_from_date(request_date)
+        return max(Decimal("0"), min_cushion)
+
     def calculate_amount_safe_to_pay(
         self,
         state: ReconstructedFinancialState,
@@ -410,17 +425,8 @@ class CashFlowEngine:
         the daily balance never drops below minimum_balance_to_keep across all 90 days.
         Bounded between 0 and requested_amount inclusive.
         """
-        # Baseline forecast with no proposed purchase
-        baseline = self.run_forecast(state, start_date=request_date, horizon_days=horizon_days)
-
-        # Find the lowest cushion above minimum balance across all days from request_date
-        min_cushion = baseline.minimum_cushion_from_date(request_date)
-
-        if min_cushion <= Decimal("0"):
-            return Decimal("0")
-
-        # Capped at requested_amount
-        return min(requested_amount, min_cushion)
+        max_safe = self.get_max_safe_amount_today(state, request_date, horizon_days=horizon_days)
+        return min(max(Decimal("0"), requested_amount), max_safe)
 
     def find_earliest_date_for_full_payment(
         self,
@@ -432,24 +438,37 @@ class CashFlowEngine:
         """Find the earliest conservative projected date for one safe full payment.
 
         Tests each candidate date from request_date through request_date + max_search_days.
-        Returns the first date where paying requested_amount in full keeps the user above
-        minimum_balance_to_keep throughout the entire 90-day forecast horizon from that date.
+        Guarantees:
+        1. It never returns a date before request_date.
+        2. The evaluation stays within the 90-day forecast horizon.
+        3. Paying requested_amount on candidate_date keeps the user at or above
+           minimum_balance_to_keep throughout the forecast horizon.
         """
         req_dt = self._parse_date(request_date)
+        end_dt = req_dt + timedelta(days=max_search_days)
+
+        if requested_amount <= Decimal("0"):
+            return request_date
 
         for day_offset in range(max_search_days + 1):
             candidate_dt = req_dt + timedelta(days=day_offset)
             candidate_str = self._format_date(candidate_dt)
 
-            # Test paying full requested_amount on candidate_str
+            # Safety check: candidate must be >= request_date and <= end_dt
+            if candidate_dt < req_dt:
+                continue
+            if candidate_dt > end_dt:
+                break
+
+            # Test paying full requested_amount on candidate_str within the 90-day forecast window
             test_forecast = self.run_forecast(
                 state=state,
                 start_date=request_date,
-                horizon_days=max(90, day_offset + 90),
+                horizon_days=max_search_days,
                 proposed_expenses=[(candidate_str, requested_amount, "Full payment trial")],
             )
 
-            # Check if test_forecast is safe throughout
+            # Check if test_forecast is safe throughout the 90-day horizon
             if test_forecast.is_safe_throughout:
                 return candidate_str
 

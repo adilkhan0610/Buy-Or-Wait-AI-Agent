@@ -803,3 +803,106 @@ branch=main
 repo_root=c:\Users\Adil\hackerrank-orchestrate-september26-1
 worktree=main
 parent_agent=none
+
+
+## 2026-11-04T23:18:30+05:30 Module 7: Affordability Engine implementation and verification
+
+User Prompt (verbatim, secrets redacted):
+Implement **Module 7: Affordability Engine** for the Buy or Wait? financial affordability agent.
+
+First inspect and integrate with the completed modules:
+1. Data Loader
+2. Data Validator
+3. Currency Converter
+4. Message & Image Analyzer
+5. Financial State Reconstructor
+6. 90-Day Cash Flow Engine
+
+Do not rewrite completed modules unless a genuine issue is found.
+
+## Before implementation: Verify Module 6
+Check these edge cases and fix them if needed:
+- `find_earliest_date_for_full_payment()` must never return a date before the request's evaluation date.
+- Confirm the 90-day forecast boundary does not accidentally include an extra day's income or expenses.
+- `calculate_amount_safe_to_pay()` must return the maximum safe amount today, not merely the requested amount when safe.
+- Confirm that proposed purchases are evaluated without mutating the baseline forecast.
+
+Add regression tests for any fixes.
+
+## Create
+- `code/affordability_engine.py`
+- `code/test_affordability_engine.py`
+
+## Goal
+For a request, determine:
+- Amount safe to pay today.
+- Affordability status.
+- Earliest date for full payment.
+- Whether a full payment, partial payment, installment plan, or waiting is suitable.
+- A clear, evidence-based explanation.
+
+## Affordability statuses
+Use only:
+- `affordable_now`
+- `affordable_with_plan`
+- `affordable_later`
+- `not_affordable`
+
+## Payment method values
+Use only:
+- `full_payment`
+- `partial_payment`
+- `installments`
+- `wait`
+- `not_recommended`
+
+## Rules
+- `amount_safe_to_pay` is the maximum safe amount today before optional spending changes.
+- It must be between zero and the requested amount.
+- Do not count pending or unconfirmed income.
+- Respect the minimum required balance at every forecast point.
+- Use the 90-day forecast from Module 6.
+- `earliest_date_for_full_payment` must be independent of payment preferences and optional spending changes.
+- If full payment is affordable today, use the request date.
+- If full payment cannot be made safely within the forecast horizon, leave the date empty.
+- Do not recommend waiting unless full payment is considered and becomes safe on a later date.
+- Do not invent payment options or payment schedules.
+- Do not implement payment-option optimization or spending-change optimization yet; those belong to Modules 8 and 9.
+
+## Tests
+Include:
+- Affordable now.
+- Affordable later.
+- Not affordable within 90 days.
+- Minimum balance protection.
+- Pending income exclusion.
+- Historical evaluation date behavior.
+- Earliest full-payment date.
+- Maximum safe amount today.
+- Deterministic explanations and results.
+- Baseline forecast remains unchanged after purchase evaluation.
+
+Run:
+`.\.venv\Scripts\python.exe code\test_affordability_engine.py`
+
+Also rerun Module 6 regression tests:
+`.\.venv\Scripts\python.exe code\test_cash_flow_engine.py`
+
+Report exact test results and any Module 6 fixes.
+
+Agent Response Summary:
+Verified and resolved Module 6 edge cases: strictly bounded `find_earliest_date_for_full_payment()` to the 90-day window without searching dates prior to `request_date`, added `get_max_safe_amount_today()` to compute unconstrained maximum safe amount, and verified forecast immutability. Implemented Module 7 (`code/affordability_engine.py`) with `AffordabilityEngine` and `AffordabilityDecision`, evaluating requests across all 4 permitted affordability statuses and 5 payment methods. Developed and executed `code/test_affordability_engine.py` (12 test suites) and reran `code/test_cash_flow_engine.py` (12 test suites), with 100% test pass rate across both suites.
+
+Actions:
+* Refined `code/cash_flow_engine.py` with boundary safeguards and `get_max_safe_amount_today`
+* Added edge-case regression tests to `code/test_cash_flow_engine.py`
+* Implemented `code/affordability_engine.py` with full decision modeling and grounded explanations
+* Updated `code/__init__.py` to export `AffordabilityEngine` and `AffordabilityDecision`
+* Created and executed `code/test_affordability_engine.py` and re-verified `code/test_cash_flow_engine.py`
+
+Context:
+tool=antigravity
+branch=main
+repo_root=c:\Users\Adil\hackerrank-orchestrate-september26-1
+worktree=main
+parent_agent=none

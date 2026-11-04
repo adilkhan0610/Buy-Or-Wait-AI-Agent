@@ -206,8 +206,32 @@ def run_cash_flow_tests() -> bool:
             assert d1.intra_day_lowest_balance == d2.intra_day_lowest_balance
         print("[OK] Determinism verified: 100% identical outputs across independent runs.\n")
 
+        # Step 12: Regression tests for edge cases
+        print("12. Testing Module 6 edge case regression safeguards...")
+        # 1. Earliest date never returns a date before request_date
+        state_04 = reconstructor.reconstruct_user("user_04")
+        earliest_04 = engine.find_earliest_date_for_full_payment(state_04, "2024-06-04", Decimal("12693000"))
+        if earliest_04 is not None:
+            assert earliest_04 >= "2024-06-04", f"Earliest date {earliest_04} cannot be before 2024-06-04"
+            assert earliest_04 <= "2024-09-02", f"Earliest date {earliest_04} cannot be after 90-day horizon"
+
+        # 2. Maximum safe amount today unconstrained
+        max_safe_01 = engine.get_max_safe_amount_today(state_01, "2024-03-03")
+        assert max_safe_01 >= Decimal("25256"), f"user_01 cushion should be at least requested amount, got {max_safe_01}"
+
+        # 3. Baseline forecast immutability
+        baseline_before = engine.run_forecast(state_01, "2024-03-03", 90)
+        # Run proposed expense trials
+        _ = engine.run_forecast(state_01, "2024-03-03", 90, proposed_expenses=[("2024-03-15", Decimal("5000"), "Trial")])
+        _ = engine.find_earliest_date_for_full_payment(state_01, "2024-03-03", Decimal("1000000"))
+        baseline_after = engine.run_forecast(state_01, "2024-03-03", 90)
+        assert baseline_before.lowest_balance == baseline_after.lowest_balance
+        assert baseline_before.lowest_balance_date == baseline_after.lowest_balance_date
+        assert len(baseline_before.daily_forecasts) == len(baseline_after.daily_forecasts)
+        print("[OK] All edge case regression safeguards verified.\n")
+
         print("=" * 80)
-        print("ALL 11 VERIFICATION SUITES IN MODULE 6 PASSED SUCCESSFULLY!")
+        print("ALL 12 VERIFICATION SUITES IN MODULE 6 PASSED SUCCESSFULLY!")
         print("=" * 80)
         return True
 
