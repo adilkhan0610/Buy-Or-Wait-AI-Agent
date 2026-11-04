@@ -28,6 +28,11 @@ from .affordability_engine import (
     AffordabilityEngine,
     AffordabilityDecision,
 )
+from .payment_plan_optimizer import (
+    PaymentPlanOptimizer,
+    PaymentOptionEvaluation,
+    PaymentPlanOptimizationResult,
+)
 
 __all__ = [
     "DataLoader",
@@ -57,4 +62,7 @@ __all__ = [
     "ForecastResult",
     "AffordabilityEngine",
     "AffordabilityDecision",
+    "PaymentPlanOptimizer",
+    "PaymentOptionEvaluation",
+    "PaymentPlanOptimizationResult",
 ]
