@@ -19,6 +19,11 @@ from .financial_state import (
     NormalizedEvent,
     FlexibleExpenseCandidate,
 )
+from .cash_flow_engine import (
+    CashFlowEngine,
+    DailyCashFlow,
+    ForecastResult,
+)
 
 __all__ = [
     "DataLoader",
@@ -43,4 +48,7 @@ __all__ = [
     "UserFinancialProfile",
     "NormalizedEvent",
     "FlexibleExpenseCandidate",
+    "CashFlowEngine",
+    "DailyCashFlow",
+    "ForecastResult",
 ]
