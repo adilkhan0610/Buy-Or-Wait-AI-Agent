@@ -38,6 +38,13 @@ from .spending_changes_optimizer import (
     SpendingChangeAction,
     SpendingChangesOptimizationResult,
 )
+from .decision_pipeline import (
+    DecisionPipeline,
+    DecisionRecord,
+    OUTPUT_COLUMNS,
+    ALLOWED_STATUSES,
+    ALLOWED_METHODS,
+)
 
 __all__ = [
     "DataLoader",
@@ -73,4 +80,9 @@ __all__ = [
     "SpendingChangesOptimizer",
     "SpendingChangeAction",
     "SpendingChangesOptimizationResult",
+    "DecisionPipeline",
+    "DecisionRecord",
+    "OUTPUT_COLUMNS",
+    "ALLOWED_STATUSES",
+    "ALLOWED_METHODS",
 ]
