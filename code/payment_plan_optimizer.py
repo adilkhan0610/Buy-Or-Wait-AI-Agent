@@ -153,12 +153,14 @@ class PaymentPlanOptimizer:
         self,
         request: Union[pd.Series, Dict[str, Any]],
         state: Optional[ReconstructedFinancialState] = None,
+        spending_adjustments: Optional[Dict[Tuple[str, str], Decimal]] = None,
     ) -> PaymentPlanOptimizationResult:
         """Evaluate all supplied payment options for a request and select the best feasible option.
 
         Args:
             request: Row or dict with request_id, user_id, request_date, requested_amount, desired_completion_date.
             state: Optional pre-reconstructed financial state.
+            spending_adjustments: Optional mapping of (category, description) to adjusted future debit amount.
 
         Returns:
             PaymentPlanOptimizationResult with evaluated candidates and selected plan.
@@ -313,6 +315,7 @@ class PaymentPlanOptimizer:
                 start_date=request_date,
                 horizon_days=sim_horizon,
                 proposed_expenses=schedule,
+                spending_adjustments=spending_adjustments,
             )
 
             if not test_forecast.is_safe_throughout:

@@ -33,6 +33,11 @@ from .payment_plan_optimizer import (
     PaymentOptionEvaluation,
     PaymentPlanOptimizationResult,
 )
+from .spending_changes_optimizer import (
+    SpendingChangesOptimizer,
+    SpendingChangeAction,
+    SpendingChangesOptimizationResult,
+)
 
 __all__ = [
     "DataLoader",
@@ -65,4 +70,7 @@ __all__ = [
     "PaymentPlanOptimizer",
     "PaymentOptionEvaluation",
     "PaymentPlanOptimizationResult",
+    "SpendingChangesOptimizer",
+    "SpendingChangeAction",
+    "SpendingChangesOptimizationResult",
 ]

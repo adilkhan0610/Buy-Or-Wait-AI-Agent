@@ -100,6 +100,7 @@ class CashFlowEngine:
         start_date: str,
         horizon_days: int = 90,
         proposed_expenses: Optional[List[Tuple[str, Decimal, str]]] = None,
+        spending_adjustments: Optional[Dict[Tuple[str, str], Decimal]] = None,
     ) -> ForecastResult:
         """Execute a 90-day daily cash-flow simulation.
 
@@ -108,6 +109,7 @@ class CashFlowEngine:
             start_date: The evaluation date (YYYY-MM-DD).
             horizon_days: Number of forecast days (default: 90).
             proposed_expenses: Optional list of proposed payments as (date, amount, description).
+            spending_adjustments: Optional mapping of (category, description) to adjusted future debit amount.
 
         Returns:
             ForecastResult with full day-by-day cash flows, safety flags, and minimum balances.
@@ -125,7 +127,7 @@ class CashFlowEngine:
 
         # Build chronological event schedule for the 90-day window
         scheduled_cash_flows = self._build_event_schedule(
-            state, start_dt, end_dt, proposed_expenses
+            state, start_dt, end_dt, proposed_expenses, spending_adjustments
         )
 
         daily_results: List[DailyCashFlow] = []
@@ -219,6 +221,7 @@ class CashFlowEngine:
         start_dt: datetime,
         end_dt: datetime,
         proposed_expenses: Optional[List[Tuple[str, Decimal, str]]] = None,
+        spending_adjustments: Optional[Dict[Tuple[str, str], Decimal]] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
         """Aggregate confirmed future obligations, confirmed future income, recurring streams,
 
@@ -240,6 +243,15 @@ class CashFlowEngine:
                 continue
             e_dt = self._parse_date(date_to_use)
             if start_dt <= e_dt <= end_dt:
+                amt = e.amount_home_currency
+                if spending_adjustments:
+                    if e.event_id in spending_adjustments:
+                        amt = spending_adjustments[e.event_id]
+                    elif (e.category, e.description) in spending_adjustments:
+                        amt = spending_adjustments[(e.category, e.description)]
+                if amt <= Decimal("0"):
+                    continue  # Stopped expense
+
                 add_event(
                     date_to_use,
                     {
@@ -247,7 +259,7 @@ class CashFlowEngine:
                         "description": e.description,
                         "category": e.category,
                         "direction": "debit",
-                        "amount": e.amount_home_currency,
+                        "amount": amt,
                         "source": "future_obligation",
                     },
                 )
@@ -282,6 +294,16 @@ class CashFlowEngine:
             direction = stream["direction"]
             day_of_month = stream["day_of_month"]
             amount = stream["amount"]
+
+            # Apply spending adjustments to future recurring streams
+            if direction == "debit" and spending_adjustments:
+                evt_id = stream.get("event_id")
+                if evt_id and evt_id in spending_adjustments:
+                    amount = spending_adjustments[evt_id]
+                elif (cat, desc) in spending_adjustments:
+                    amount = spending_adjustments[(cat, desc)]
+            if amount <= Decimal("0"):
+                continue  # Stopped expense
 
             # Project across the 3 calendar months spanning the 90 days
             cur = start_dt
@@ -387,6 +409,7 @@ class CashFlowEngine:
             # Use latest amount in home currency
             streams.append(
                 {
+                    "event_id": latest_evt.event_id,
                     "category": cat,
                     "description": desc,
                     "direction": direction,
