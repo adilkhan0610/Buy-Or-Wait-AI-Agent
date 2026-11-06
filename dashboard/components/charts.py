@@ -244,3 +244,131 @@ def render_cash_flow_trajectory(
     )
     st.plotly_chart(fig, use_container_width=True)
 
+
+
+
+def render_comprehensive_cash_flow_chart(
+    dates: List[str],
+    baseline_balances: List[float],
+    min_balance: float,
+    initial_balance: float,
+    plan_balances: Optional[List[float]] = None,
+    income_events: Optional[List[dict]] = None,
+    expense_events: Optional[List[dict]] = None,
+    currency: str = "USD",
+    request_date: Optional[str] = None,
+    height: int = 420
+) -> None:
+    """Render comprehensive interactive Plotly cash flow chart with credits, debits, and plan comparison."""
+    if not dates or not baseline_balances:
+        st.info("No cash flow projection points available.")
+        return
+
+    fig = go.Figure()
+
+    # 1. Baseline projected balance curve with subtle gradient fill
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=baseline_balances,
+        mode="lines",
+        line=dict(color="#2563EB", width=2.5),
+        fill="tozeroy",
+        fillcolor="rgba(37, 99, 235, 0.05)",
+        name="Baseline Projected Balance",
+        hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Baseline Balance:</b> %{{y:,.2f}} {currency}<extra></extra>"
+    ))
+
+    # 2. Post-purchase plan trajectory if provided
+    if plan_balances and len(plan_balances) == len(dates):
+        fig.add_trace(go.Scatter(
+            x=dates,
+            y=plan_balances,
+            mode="lines",
+            line=dict(color="#8B5CF6", width=2.2, dash="dash"),
+            name="Post-Purchase Plan Balance",
+            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Plan Balance:</b> %{{y:,.2f}} {currency}<extra></extra>"
+        ))
+
+    # 3. Income Events (Credits)
+    if income_events:
+        inc_x = [e["date"] for e in income_events]
+        inc_y = [e["balance"] for e in income_events]
+        inc_text = [e["tooltip"] for e in income_events]
+        fig.add_trace(go.Scatter(
+            x=inc_x,
+            y=inc_y,
+            mode="markers",
+            marker=dict(symbol="triangle-up", color="#10B981", size=10, line=dict(color="#FFFFFF", width=1.5)),
+            name="Income Inflows (+)",
+            text=inc_text,
+            hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>"
+        ))
+
+    # 4. Expense Events (Debits)
+    if expense_events:
+        exp_x = [e["date"] for e in expense_events]
+        exp_y = [e["balance"] for e in expense_events]
+        exp_text = [e["tooltip"] for e in expense_events]
+        fig.add_trace(go.Scatter(
+            x=exp_x,
+            y=exp_y,
+            mode="markers",
+            marker=dict(symbol="triangle-down", color="#EF4444", size=10, line=dict(color="#FFFFFF", width=1.5)),
+            name="Expense Outflows (-)",
+            text=exp_text,
+            hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>"
+        ))
+
+    # 5. Minimum Required Balance Horizontal Line
+    fig.add_hline(
+        y=min_balance,
+        line_dash="dash",
+        line_color="#DC2626",
+        line_width=1.8,
+        annotation_text=f"Minimum Reserve ({min_balance:,.0f} {currency})",
+        annotation_position="top left",
+        annotation_font=dict(color="#DC2626", size=11, family=PLOT_FONT_FAMILY)
+    )
+
+    # 6. Starting Balance Dotted Horizontal Line
+    fig.add_hline(
+        y=initial_balance,
+        line_dash="dot",
+        line_color="#64748B",
+        line_width=1.2,
+        annotation_text=f"Starting ({initial_balance:,.0f} {currency})",
+        annotation_position="bottom right",
+        annotation_font=dict(color="#64748B", size=10, family=PLOT_FONT_FAMILY)
+    )
+
+    # 7. Request Date Line
+    if request_date and request_date in dates:
+        fig.add_vline(
+            x=request_date,
+            line_dash="dot",
+            line_color="#0284C7",
+            annotation_text="Evaluation Date",
+            annotation_position="top right",
+            annotation_font=dict(color="#0284C7", size=10, family=PLOT_FONT_FAMILY)
+        )
+
+    fig.update_layout(
+        title=dict(text="<b>90-Day Dynamic Cash Flow Forecast & Reserve Invariants</b>", font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        margin=dict(l=15, r=15, t=45, b=15),
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=PLOT_FONT_FAMILY),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Forecast Date"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Available Cash ({currency})"),
+        hovermode="closest",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.22,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155")
+        )
+    )
+    st.plotly_chart(fig, use_container_width=True)
