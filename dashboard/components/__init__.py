@@ -10,6 +10,7 @@ from dashboard.components.charts import (
     render_comprehensive_cash_flow_chart,
     render_payment_schedule_chart,
     render_payment_options_comparison_chart,
+    render_spending_comparison_chart,
 )
 from dashboard.components.decision_cards import (
     render_decision_hero,
@@ -26,6 +27,7 @@ __all__ = [
     "render_comprehensive_cash_flow_chart",
     "render_payment_schedule_chart",
     "render_payment_options_comparison_chart",
+    "render_spending_comparison_chart",
     "render_decision_hero",
     "render_payment_plan_schedule",
 ]

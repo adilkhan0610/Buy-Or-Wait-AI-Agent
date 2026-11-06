@@ -14,11 +14,13 @@ from dashboard.utils.formatting import (
     COLOR_AFFORDABLE_WITH_PLAN,
     COLOR_AFFORDABLE_LATER,
     COLOR_NOT_AFFORDABLE,
-    STATUS_COLORS
+    STATUS_COLORS,
 )
 
 
-PLOT_FONT_FAMILY = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+PLOT_FONT_FAMILY = (
+    "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+)
 
 
 def render_status_donut_chart(df: pd.DataFrame, height: int = 350) -> None:
@@ -29,44 +31,52 @@ def render_status_donut_chart(df: pd.DataFrame, height: int = 350) -> None:
 
     counts = df["affordability_status"].value_counts().reset_index()
     counts.columns = ["status", "count"]
-    
+
     color_map = {
         "affordable_now": COLOR_AFFORDABLE_NOW,
         "affordable_with_plan": COLOR_AFFORDABLE_WITH_PLAN,
         "affordable_later": COLOR_AFFORDABLE_LATER,
-        "not_affordable": COLOR_NOT_AFFORDABLE
+        "not_affordable": COLOR_NOT_AFFORDABLE,
     }
-    
+
     label_map = {
         "affordable_now": "Affordable Now",
         "affordable_with_plan": "Affordable with Plan",
         "affordable_later": "Affordable Later",
-        "not_affordable": "Not Affordable"
+        "not_affordable": "Not Affordable",
     }
-    
+
     counts["label"] = counts["status"].map(label_map).fillna(counts["status"])
     counts["color"] = counts["status"].map(color_map).fillna("#94A3B8")
-    
-    fig = go.Figure(data=[
-        go.Pie(
-            labels=counts["label"],
-            values=counts["count"],
-            hole=0.58,
-            marker=dict(colors=counts["color"], line=dict(color="#FFFFFF", width=2)),
-            textinfo="percent+value",
-            textposition="inside",
-            insidetextorientation="horizontal",
-            hovertemplate="<b>%{label}</b><br>Decisions: %{value}<br>Share: %{percent}<extra></extra>"
-        )
-    ])
-    
+
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=counts["label"],
+                values=counts["count"],
+                hole=0.58,
+                marker=dict(colors=counts["color"], line=dict(color="#FFFFFF", width=2)),
+                textinfo="percent+value",
+                textposition="inside",
+                insidetextorientation="horizontal",
+                hovertemplate="<b>%{label}</b><br>Decisions: %{value}<br>Share: %{percent}<extra></extra>",
+            )
+        ]
+    )
+
     total = len(df)
     fig.update_layout(
-        title=dict(text="<b>Affordability Status Distribution</b>", font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        title=dict(
+            text="<b>Affordability Status Distribution</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
         annotations=[
             dict(
                 text=f"<span style='font-size:22px; font-weight:700; color:#0F172A;'>{total}</span><br><span style='font-size:12px; color:#64748B;'>Requests</span>",
-                x=0.5, y=0.5, font_size=14, showarrow=False
+                x=0.5,
+                y=0.5,
+                font_size=14,
+                showarrow=False,
             )
         ],
         margin=dict(l=10, r=10, t=40, b=10),
@@ -79,8 +89,8 @@ def render_status_donut_chart(df: pd.DataFrame, height: int = 350) -> None:
             y=-0.15,
             xanchor="center",
             x=0.5,
-            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155")
-        )
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155"),
+        ),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -93,231 +103,243 @@ def render_payment_methods_bar_chart(df: pd.DataFrame, height: int = 350) -> Non
 
     counts = df["recommended_payment_method"].value_counts().reset_index()
     counts.columns = ["method", "count"]
-    
+
     method_labels = {
         "full_payment": "Full Payment",
         "partial_payment": "Partial Payment",
         "installments": "Installments",
         "wait": "Wait",
-        "not_recommended": "Not Recommended"
+        "not_recommended": "Not Recommended",
     }
     method_colors = {
         "full_payment": "#10B981",
         "partial_payment": "#2563EB",
         "installments": "#8B5CF6",
         "wait": "#F59E0B",
-        "not_recommended": "#EF4444"
+        "not_recommended": "#EF4444",
     }
-    
+
     counts["label"] = counts["method"].map(method_labels).fillna(counts["method"])
     counts["color"] = counts["method"].map(method_colors).fillna("#64748B")
     counts = counts.sort_values(by="count", ascending=True)
 
-    fig = go.Figure(go.Bar(
-        x=counts["count"],
-        y=counts["label"],
-        orientation="h",
-        marker=dict(color=counts["color"], line=dict(color="#FFFFFF", width=1)),
-        text=counts["count"],
-        textposition="outside",
-        hovertemplate="<b>%{y}</b><br>Count: %{x}<extra></extra>"
-    ))
-    
+    fig = go.Figure(
+        go.Bar(
+            x=counts["count"],
+            y=counts["label"],
+            orientation="h",
+            marker=dict(color=counts["color"], line=dict(color="#FFFFFF", width=1)),
+            text=counts["count"],
+            textposition="outside",
+            hovertemplate="<b>%{y}</b><br>Count: %{x}<extra></extra>",
+        )
+    )
+
     fig.update_layout(
-        title=dict(text="<b>Recommended Payment Methods</b>", font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        title=dict(
+            text="<b>Recommended Payment Methods</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
         margin=dict(l=10, r=30, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=dict(text="Count", font=dict(size=11, color="#64748B"))),
-        yaxis=dict(title="", tickfont=dict(size=12, color="#334155"))
+        xaxis=dict(
+            showgrid=True,
+            gridcolor="#E2E8F0",
+            title=dict(text="Count", font=dict(size=11, color="#64748B")),
+        ),
+        yaxis=dict(title="", tickfont=dict(size=12, color="#334155")),
     )
     st.plotly_chart(fig, use_container_width=True)
 
 
 def render_safe_amount_distribution(df: pd.DataFrame, height: int = 350) -> None:
-    """Render scatter / comparison of requested amount vs amount safe to pay."""
-    if df.empty or "requested_amount" not in df.columns or "amount_safe_to_pay" not in df.columns:
+    """Render a distribution histogram of Safe to Pay Amount."""
+    if df.empty or "amount_safe_to_pay" not in df.columns:
+        st.info("No safe amount data available.")
         return
-        
-    color_map = {
-        "affordable_now": COLOR_AFFORDABLE_NOW,
-        "affordable_with_plan": COLOR_AFFORDABLE_WITH_PLAN,
-        "affordable_later": COLOR_AFFORDABLE_LATER,
-        "not_affordable": COLOR_NOT_AFFORDABLE
-    }
-    
-    fig = px.scatter(
+
+    fig = px.histogram(
         df,
-        x="requested_amount",
-        y="amount_safe_to_pay",
-        color="affordability_status",
-        color_discrete_map=color_map,
-        hover_data=["request_id", "recommended_payment_method"],
-        title="<b>Amount Safe to Pay vs. Requested Amount</b>",
-        labels={"requested_amount": "Requested Amount ($)", "amount_safe_to_pay": "Amount Safe Today ($)"}
+        x="amount_safe_to_pay",
+        nbins=25,
+        color_discrete_sequence=["#2563EB"],
+        labels={"amount_safe_to_pay": "Amount Safe to Pay Today ($)"},
     )
-    
-    # 45-degree parity reference line
-    max_val = max(df["requested_amount"].max(), df["amount_safe_to_pay"].max(), 100)
-    fig.add_trace(go.Scatter(
-        x=[0, max_val],
-        y=[0, max_val],
-        mode="lines",
-        line=dict(color="#CBD5E1", dash="dash"),
-        name="100% Safe Today",
-        hoverinfo="skip"
-    ))
-    
+
     fig.update_layout(
+        title=dict(
+            text="<b>Distribution of Safe Initial Outlay ($)</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
+        margin=dict(l=10, r=10, t=40, b=10),
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Number of Requests"),
+        bargap=0.08,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render_cash_flow_trajectory(forecast_result, height: int = 350) -> None:
+    """Render 90-day cash flow simulation curve against minimum balance threshold."""
+    if not forecast_result or not getattr(forecast_result, "daily_forecasts", None):
+        st.info("No cash flow trajectory data available.")
+        return
+
+    dates = [d.date for d in forecast_result.daily_forecasts]
+    balances = [float(d.ending_balance) for d in forecast_result.daily_forecasts]
+    min_balance = float(forecast_result.minimum_balance_to_keep)
+    currency = forecast_result.home_currency
+
+    fig = go.Figure()
+
+    # Trajectory area/line
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=balances,
+            mode="lines",
+            line=dict(color="#2563EB", width=2.5),
+            fill="tozeroy",
+            fillcolor="rgba(37, 99, 235, 0.08)",
+            name="Ending Balance",
+            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Balance:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
+
+    # Minimum Balance Line
+    fig.add_hline(
+        y=min_balance,
+        line_dash="dash",
+        line_color="#EF4444",
+        line_width=2,
+        annotation_text=f"Minimum Reserve ({min_balance:,.0f} {currency})",
+        annotation_position="bottom right",
+        annotation_font=dict(color="#EF4444", size=11, family=PLOT_FONT_FAMILY),
+    )
+
+    fig.update_layout(
+        title=dict(
+            text="<b>90-Day Projected Cash Balance Horizon</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
         margin=dict(l=10, r=10, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family=PLOT_FONT_FAMILY),
-        xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
-        yaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5, font=dict(size=11))
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Forecast Date"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Available Cash ({currency})"),
+        hovermode="x unified",
     )
     st.plotly_chart(fig, use_container_width=True)
-
-
-def render_cash_flow_trajectory(
-    dates: List[str],
-    balances: List[float],
-    min_balance: float,
-    currency: str = "USD",
-    request_date: Optional[str] = None,
-    height: int = 380
-) -> None:
-    """Render cash flow trajectory line chart over 90 days with safe minimum threshold."""
-    if not dates or not balances:
-        st.info("No cash flow projection points available.")
-        return
-
-    df_cf = pd.DataFrame({"date": dates, "balance": balances})
-    
-    fig = go.Figure()
-    
-    # Balance projection curve
-    fig.add_trace(go.Scatter(
-        x=df_cf["date"],
-        y=df_cf["balance"],
-        mode="lines+markers",
-        line=dict(color="#2563EB", width=2.5),
-        marker=dict(size=4, color="#1D4ED8"),
-        name="Projected Balance",
-        hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Projected Balance:</b> %{{y:,.2f}} {currency}<extra></extra>"
-    ))
-    
-    # Minimum required balance line
-    fig.add_hline(
-        y=min_balance,
-        line_dash="dash",
-        line_color="#EF4444",
-        annotation_text=f"Minimum Required Balance ({min_balance:,.0f} {currency})",
-        annotation_position="top left",
-        annotation_font=dict(color="#EF4444", size=11, family=PLOT_FONT_FAMILY)
-    )
-    
-    # Request date vertical line if supplied
-    if request_date and request_date in dates:
-        fig.add_vline(
-            x=request_date,
-            line_dash="dot",
-            line_color="#64748B",
-            annotation_text="Evaluation Date",
-            annotation_position="bottom right",
-            annotation_font=dict(color="#64748B", size=11, family=PLOT_FONT_FAMILY)
-        )
-
-    fig.update_layout(
-        title=dict(text="<b>90-Day Cash Flow Projection & Safety Boundary</b>", font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A")),
-        margin=dict(l=20, r=20, t=50, b=20),
-        height=height,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family=PLOT_FONT_FAMILY),
-        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Date"),
-        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Available Balance ({currency})"),
-        hovermode="x unified"
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-
 
 
 def render_comprehensive_cash_flow_chart(
-    dates: List[str],
-    baseline_balances: List[float],
-    min_balance: float,
-    initial_balance: float,
+    forecast_result=None,
     plan_balances: Optional[List[float]] = None,
     income_events: Optional[List[dict]] = None,
     expense_events: Optional[List[dict]] = None,
-    currency: str = "USD",
     request_date: Optional[str] = None,
-    height: int = 420
+    height: int = 420,
+    dates: Optional[List[str]] = None,
+    baseline_balances: Optional[List[float]] = None,
+    min_balance: Optional[float] = None,
+    initial_balance: Optional[float] = None,
+    currency: Optional[str] = None,
 ) -> None:
-    """Render comprehensive interactive Plotly cash flow chart with credits, debits, and plan comparison."""
-    if not dates or not baseline_balances:
-        st.info("No cash flow projection points available.")
+    """Render full interactive cash flow chart with credit/debit markers and plan curve."""
+    if forecast_result is not None and getattr(forecast_result, "daily_forecasts", None):
+        dates = [d.date for d in forecast_result.daily_forecasts]
+        baseline_balances = [float(d.ending_balance) for d in forecast_result.daily_forecasts]
+        min_balance = float(forecast_result.minimum_balance_to_keep)
+        initial_balance = float(forecast_result.initial_balance)
+        currency = forecast_result.home_currency
+
+    if not dates or baseline_balances is None:
+        st.info("No cash flow trajectory data available.")
         return
+
+    min_balance = float(min_balance or 0.0)
+    initial_balance = float(initial_balance or 0.0)
+    currency = currency or "USD"
 
     fig = go.Figure()
 
-    # 1. Baseline projected balance curve with subtle gradient fill
-    fig.add_trace(go.Scatter(
-        x=dates,
-        y=baseline_balances,
-        mode="lines",
-        line=dict(color="#2563EB", width=2.5),
-        fill="tozeroy",
-        fillcolor="rgba(37, 99, 235, 0.05)",
-        name="Baseline Projected Balance",
-        hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Baseline Balance:</b> %{{y:,.2f}} {currency}<extra></extra>"
-    ))
+    # 1. Baseline Balance Area Line
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=baseline_balances,
+            mode="lines",
+            line=dict(color="#2563EB", width=2.5),
+            fill="tozeroy",
+            fillcolor="rgba(37, 99, 235, 0.06)",
+            name="Baseline Cash Balance",
+            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Baseline Balance:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
 
     # 2. Post-purchase plan trajectory if provided
     if plan_balances and len(plan_balances) == len(dates):
-        fig.add_trace(go.Scatter(
-            x=dates,
-            y=plan_balances,
-            mode="lines",
-            line=dict(color="#8B5CF6", width=2.2, dash="dash"),
-            name="Post-Purchase Plan Balance",
-            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Plan Balance:</b> %{{y:,.2f}} {currency}<extra></extra>"
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=plan_balances,
+                mode="lines",
+                line=dict(color="#8B5CF6", width=2.2, dash="dash"),
+                name="Post-Purchase Plan Balance",
+                hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Plan Balance:</b> %{{y:,.2f}} {currency}<extra></extra>",
+            )
+        )
 
     # 3. Income Events (Credits)
     if income_events:
         inc_x = [e["date"] for e in income_events]
         inc_y = [e["balance"] for e in income_events]
         inc_text = [e["tooltip"] for e in income_events]
-        fig.add_trace(go.Scatter(
-            x=inc_x,
-            y=inc_y,
-            mode="markers",
-            marker=dict(symbol="triangle-up", color="#10B981", size=10, line=dict(color="#FFFFFF", width=1.5)),
-            name="Income Inflows (+)",
-            text=inc_text,
-            hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>"
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=inc_x,
+                y=inc_y,
+                mode="markers",
+                marker=dict(
+                    symbol="triangle-up",
+                    color="#10B981",
+                    size=10,
+                    line=dict(color="#FFFFFF", width=1.5),
+                ),
+                name="Income Inflows (+)",
+                text=inc_text,
+                hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>",
+            )
+        )
 
     # 4. Expense Events (Debits)
     if expense_events:
         exp_x = [e["date"] for e in expense_events]
         exp_y = [e["balance"] for e in expense_events]
         exp_text = [e["tooltip"] for e in expense_events]
-        fig.add_trace(go.Scatter(
-            x=exp_x,
-            y=exp_y,
-            mode="markers",
-            marker=dict(symbol="triangle-down", color="#EF4444", size=10, line=dict(color="#FFFFFF", width=1.5)),
-            name="Expense Outflows (-)",
-            text=exp_text,
-            hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>"
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=exp_x,
+                y=exp_y,
+                mode="markers",
+                marker=dict(
+                    symbol="triangle-down",
+                    color="#EF4444",
+                    size=10,
+                    line=dict(color="#FFFFFF", width=1.5),
+                ),
+                name="Expense Outflows (-)",
+                text=exp_text,
+                hovertemplate=f"<b>%{{text}}</b><br>Date: %{{x}}<br>Balance: %{{y:,.2f}} {currency}<extra></extra>",
+            )
+        )
 
     # 5. Minimum Required Balance Horizontal Line
     fig.add_hline(
@@ -327,7 +349,7 @@ def render_comprehensive_cash_flow_chart(
         line_width=1.8,
         annotation_text=f"Minimum Reserve ({min_balance:,.0f} {currency})",
         annotation_position="top left",
-        annotation_font=dict(color="#DC2626", size=11, family=PLOT_FONT_FAMILY)
+        annotation_font=dict(color="#DC2626", size=11, family=PLOT_FONT_FAMILY),
     )
 
     # 6. Starting Balance Dotted Horizontal Line
@@ -338,7 +360,7 @@ def render_comprehensive_cash_flow_chart(
         line_width=1.2,
         annotation_text=f"Starting ({initial_balance:,.0f} {currency})",
         annotation_position="bottom right",
-        annotation_font=dict(color="#64748B", size=10, family=PLOT_FONT_FAMILY)
+        annotation_font=dict(color="#64748B", size=10, family=PLOT_FONT_FAMILY),
     )
 
     # 7. Request Date Line
@@ -349,11 +371,14 @@ def render_comprehensive_cash_flow_chart(
             line_color="#0284C7",
             annotation_text="Evaluation Date",
             annotation_position="top right",
-            annotation_font=dict(color="#0284C7", size=10, family=PLOT_FONT_FAMILY)
+            annotation_font=dict(color="#0284C7", size=10, family=PLOT_FONT_FAMILY),
         )
 
     fig.update_layout(
-        title=dict(text="<b>90-Day Dynamic Cash Flow Forecast & Reserve Invariants</b>", font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        title=dict(
+            text="<b>90-Day Dynamic Cash Flow Forecast & Reserve Invariants</b>",
+            font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
         margin=dict(l=15, r=15, t=45, b=15),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
@@ -368,8 +393,8 @@ def render_comprehensive_cash_flow_chart(
             y=-0.22,
             xanchor="center",
             x=0.5,
-            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155")
-        )
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155"),
+        ),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -397,6 +422,7 @@ def render_payment_schedule_chart(
     rem_balances = [max(0.0, total_cost - cum) for cum in cum_amounts]
 
     from plotly.subplots import make_subplots
+
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     # Bar trace for installment amounts
@@ -530,6 +556,82 @@ def render_payment_options_comparison_chart(
         xaxis=dict(showgrid=False, title="Candidate Provider Options"),
         yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Total Cost ({currency})"),
         hovermode="closest",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155"),
+        ),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render_spending_comparison_chart(
+    dates: List[str],
+    baseline_balances: List[float],
+    adjusted_balances: List[float],
+    min_balance: float,
+    currency: str = "USD",
+    height: int = 360,
+) -> None:
+    """Render Plotly comparison of baseline vs post-spending-changes cash flow."""
+    if not dates:
+        st.info("No forecast dates available for comparison.")
+        return
+
+    fig = go.Figure()
+
+    # 1. Baseline Balance Trace
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=baseline_balances,
+            mode="lines",
+            line=dict(color="#64748B", width=2, dash="dot"),
+            name="Baseline Cash Flow",
+            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Baseline:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
+
+    # 2. Adjusted Balance Trace
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=adjusted_balances,
+            mode="lines",
+            line=dict(color="#2563EB", width=2.5),
+            name="Optimized Cash Flow (After Changes)",
+            hovertemplate=f"<b>Date:</b> %{{x}}<br><b>Optimized:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
+
+    # 3. Minimum Required Reserve
+    fig.add_hline(
+        y=min_balance,
+        line_dash="dash",
+        line_color="#DC2626",
+        line_width=1.8,
+        annotation_text=f"Minimum Reserve ({min_balance:,.0f} {currency})",
+        annotation_position="top left",
+        annotation_font=dict(color="#DC2626", size=11, family=PLOT_FONT_FAMILY),
+    )
+
+    fig.update_layout(
+        title=dict(
+            text="<b>Cash Flow Trajectory: Baseline vs. Optimized Spending Changes</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
+        margin=dict(l=15, r=15, t=45, b=15),
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=PLOT_FONT_FAMILY),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Forecast Date"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Available Cash ({currency})"),
+        hovermode="x unified",
         legend=dict(
             orientation="h",
             yanchor="bottom",
