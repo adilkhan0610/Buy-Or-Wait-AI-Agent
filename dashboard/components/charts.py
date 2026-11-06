@@ -3,7 +3,7 @@ Plotly chart components for the Buy or Wait dashboard.
 Features sleek themes, branded colors, interactive tooltips, and responsive layout.
 """
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -371,4 +371,173 @@ def render_comprehensive_cash_flow_chart(
             font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155")
         )
     )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render_payment_schedule_chart(
+    schedule_items: List[Tuple[str, float]],
+    total_cost: float,
+    currency: str = "USD",
+    height: int = 350,
+) -> None:
+    """Render an interactive dual-axis chart showing payment schedule amounts, cumulative paid, and remaining balance."""
+    if not schedule_items:
+        st.info("No active payment schedule to display.")
+        return
+
+    dates = [str(item[0]) for item in schedule_items]
+    amounts = [float(item[1]) for item in schedule_items]
+
+    cum_amounts = []
+    running = 0.0
+    for amt in amounts:
+        running += amt
+        cum_amounts.append(running)
+
+    rem_balances = [max(0.0, total_cost - cum) for cum in cum_amounts]
+
+    from plotly.subplots import make_subplots
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # Bar trace for installment amounts
+    fig.add_trace(
+        go.Bar(
+            x=dates,
+            y=amounts,
+            name="Payment Due",
+            marker=dict(color="#0284C7", line=dict(color="#0369A1", width=1.5)),
+            text=[f"{a:,.2f}" for a in amounts],
+            textposition="auto",
+            hovertemplate=f"<b>Payment Due:</b> %{{y:,.2f}} {currency}<br><b>Date:</b> %{{x}}<extra></extra>",
+        ),
+        secondary_y=False,
+    )
+
+    # Line trace for cumulative paid
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=cum_amounts,
+            mode="lines+markers",
+            name="Cumulative Paid",
+            line=dict(color="#10B981", width=3),
+            marker=dict(size=8, color="#10B981"),
+            hovertemplate=f"<b>Cumulative Paid:</b> %{{y:,.2f}} {currency}<br><b>Date:</b> %{{x}}<extra></extra>",
+        ),
+        secondary_y=True,
+    )
+
+    # Line trace for remaining balance
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=rem_balances,
+            mode="lines+markers",
+            name="Remaining Balance",
+            line=dict(color="#F59E0B", width=2.5, dash="dash"),
+            marker=dict(size=8, color="#F59E0B"),
+            hovertemplate=f"<b>Remaining Balance:</b> %{{y:,.2f}} {currency}<br><b>Date:</b> %{{x}}<extra></extra>",
+        ),
+        secondary_y=True,
+    )
+
+    fig.update_layout(
+        title=dict(
+            text="<b>Payment Schedule: Due Dates, Cumulative Paid & Remaining Balance</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
+        margin=dict(l=15, r=15, t=45, b=15),
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=PLOT_FONT_FAMILY),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Payment Date"),
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155"),
+        ),
+    )
+    fig.update_yaxes(
+        title_text=f"Payment Amount ({currency})",
+        secondary_y=False,
+        showgrid=True,
+        gridcolor="#E2E8F0",
+    )
+    fig.update_yaxes(
+        title_text=f"Cumulative / Remaining ({currency})",
+        secondary_y=True,
+        showgrid=False,
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render_payment_options_comparison_chart(
+    evaluated_options: list,
+    currency: str = "USD",
+    height: int = 300,
+) -> None:
+    """Render a stacked bar chart comparing Total Cost (Principal + Fee) across evaluated options."""
+    if not evaluated_options:
+        return
+
+    labels = [
+        f"<b>{opt.payment_option_id}</b><br>({opt.number_of_payments}x {opt.payment_method})"
+        for opt in evaluated_options
+    ]
+
+    principals = [float(opt.total_amount_paid - opt.financing_fee) for opt in evaluated_options]
+    fees = [float(opt.financing_fee) for opt in evaluated_options]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=principals,
+            name="Principal",
+            marker=dict(color="#0284C7"),
+            hovertemplate=f"<b>Principal:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=fees,
+            name="Financing Fee",
+            marker=dict(color="#EF4444"),
+            hovertemplate=f"<b>Financing Fee:</b> %{{y:,.2f}} {currency}<extra></extra>",
+        )
+    )
+
+    fig.update_layout(
+        barmode="stack",
+        title=dict(
+            text="<b>Option Cost Breakdown: Principal vs Financing Fee</b>",
+            font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
+        ),
+        margin=dict(l=15, r=15, t=45, b=15),
+        height=height,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=PLOT_FONT_FAMILY),
+        xaxis=dict(showgrid=False, title="Candidate Provider Options"),
+        yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=f"Total Cost ({currency})"),
+        hovermode="closest",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.25,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155"),
+        ),
+    )
+
     st.plotly_chart(fig, use_container_width=True)
