@@ -94,7 +94,10 @@ def render_overview_page():
     ]
     render_kpi_row(row_1_cards)
 
-    # Row 2: 4 Cards (Capital, Safety, & Risk)
+    # Row 2: 4 Cards (Capital, Safety, & Risk - normalized across currencies)
+    mean_safe_pct = float(df["safe_to_pay_pct"].mean()) if "safe_to_pay_pct" in df.columns else 0.0
+    num_currencies = df["home_currency"].nunique() if "home_currency" in df.columns else 5
+
     row_2_cards = [
         {
             "title": "Not Affordable",
@@ -103,23 +106,7 @@ def render_overview_page():
             "icon": "✕",
             "delta": f"{not_cnt}",
             "delta_color": COLOR_NOT_AFFORDABLE,
-            "border_left_color": COLOR_NOT_AFFORDABLE
-        },
-        {
-            "title": "Total Volume Requested",
-            "value": format_currency(total_requested, "USD"),
-            "subtitle": f"Across {total_requests} purchase requests",
-            "icon": "💰",
-            "border_left_color": "#6366F1"
-        },
-        {
-            "title": "Total Safe Today",
-            "value": format_currency(total_safe_today, "USD"),
-            "subtitle": f"{safe_pct:.1f}% capital safe today",
-            "icon": "🛡️",
-            "delta": f"{safe_pct:.1f}%",
-            "delta_color": COLOR_AFFORDABLE_NOW,
-            "border_left_color": COLOR_AFFORDABLE_NOW
+            "border_left_color": COLOR_NOT_AFFORDABLE,
         },
         {
             "title": "Feasibility Rate",
@@ -128,10 +115,50 @@ def render_overview_page():
             "icon": "🎯",
             "delta": f"{actionable_count} feasible",
             "delta_color": "#0284C7",
-            "border_left_color": "#0284C7"
-        }
+            "border_left_color": "#0284C7",
+        },
+        {
+            "title": "Mean Safe Coverage",
+            "value": f"{mean_safe_pct:.1f}%",
+            "subtitle": "Average safe outlay ratio today",
+            "icon": "🛡️",
+            "delta": f"{mean_safe_pct:.1f}%",
+            "delta_color": COLOR_AFFORDABLE_NOW,
+            "border_left_color": COLOR_AFFORDABLE_NOW,
+        },
+        {
+            "title": "Active Currencies",
+            "value": f"{num_currencies} Currencies",
+            "subtitle": "INR, EUR, IDR, ZAR, USD",
+            "icon": "💱",
+            "border_left_color": "#6366F1",
+        },
     ]
     render_kpi_row(row_2_cards)
+
+    # Multi-Currency Volume & Safe Outlay Breakdown Table
+    if "home_currency" in df.columns:
+        st.markdown("#### 💱 Purchase Volume & Safe Outlay by Currency")
+        st.caption("Normalized accounting by user home currency (preventing invalid cross-currency summation):")
+
+        currency_summary = []
+        for curr in sorted(df["home_currency"].dropna().unique()):
+            sub = df[df["home_currency"] == curr]
+            req_tot = float(sub["requested_amount"].sum())
+            safe_tot = float(sub["amount_safe_to_pay"].sum())
+            curr_mean_pct = float(sub["safe_to_pay_pct"].mean())
+            currency_summary.append({
+                "Currency": curr,
+                "Requests": len(sub),
+                "Total Requested": format_currency(req_tot, curr),
+                "Total Safe Today": format_currency(safe_tot, curr),
+                "Avg Safe Coverage": f"{curr_mean_pct:.1f}%",
+                "Affordable Now": int((sub["affordability_status"] == "affordable_now").sum()),
+                "With Plan": int((sub["affordability_status"] == "affordable_with_plan").sum()),
+                "Later": int((sub["affordability_status"] == "affordable_later").sum()),
+                "Not Affordable": int((sub["affordability_status"] == "not_affordable").sum()),
+            })
+        st.dataframe(pd.DataFrame(currency_summary), use_container_width=True, hide_index=True)
 
     # Section divider with small clean margin
     st.write("")

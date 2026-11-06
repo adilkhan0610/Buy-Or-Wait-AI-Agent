@@ -55,15 +55,19 @@ def load_profiles_data() -> pd.DataFrame:
 
 @st.cache_data(show_spinner="Merging decision datasets...")
 def load_merged_data() -> pd.DataFrame:
-    """Merge output.csv with requests.csv for rich analytics."""
+    """Merge output.csv with requests.csv and user profiles for rich analytics."""
     pred_df = load_predictions_data()
     req_df = load_requests_data()
-    
+    prof_df = load_profiles_data()
+
     if pred_df.empty or req_df.empty:
         return pred_df
-        
+
     merged = pd.merge(pred_df, req_df, on="request_id", how="left")
-    
+
+    if not prof_df.empty and "user_id" in merged.columns and "home_currency" in prof_df.columns:
+        merged = pd.merge(merged, prof_df[["user_id", "home_currency"]], on="user_id", how="left")
+
     # Calculate difference and affordability coverage
     if "requested_amount" in merged.columns and "amount_safe_to_pay" in merged.columns:
         merged["safe_to_pay_pct"] = (

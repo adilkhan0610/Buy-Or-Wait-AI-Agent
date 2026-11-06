@@ -77,11 +77,19 @@ def render_decision_explorer_page():
         st_val = r.get("affordability_status", "")
         options.append(f"{req_id} | User {uid} | {st_val} (${amt:,.2f})")
 
+    default_index = 0
+    if "selected_request_id" in st.session_state:
+        req_target = str(st.session_state["selected_request_id"]).strip()
+        for idx, opt in enumerate(options):
+            if opt.startswith(req_target + " |") or opt.startswith(req_target + " "):
+                default_index = idx
+                break
+
     with col_selector:
         selected_option = st.selectbox(
             "Select Request to Inspect (Searchable):",
             options=options,
-            index=0
+            index=default_index
         )
 
     selected_req_id = selected_option.split(" | ")[0]

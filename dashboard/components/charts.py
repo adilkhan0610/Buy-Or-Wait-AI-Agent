@@ -155,29 +155,32 @@ def render_payment_methods_bar_chart(df: pd.DataFrame, height: int = 350) -> Non
 
 
 def render_safe_amount_distribution(df: pd.DataFrame, height: int = 350) -> None:
-    """Render a distribution histogram of Safe to Pay Amount."""
-    if df.empty or "amount_safe_to_pay" not in df.columns:
+    """Render a normalized distribution histogram of Safe Initial Outlay Ratio."""
+    if df.empty:
         st.info("No safe amount data available.")
         return
 
+    col_to_plot = "safe_to_pay_pct" if "safe_to_pay_pct" in df.columns else "amount_safe_to_pay"
+    label_text = "Safe Outlay Ratio (% of Requested Amount)" if col_to_plot == "safe_to_pay_pct" else "Amount Safe to Pay"
+
     fig = px.histogram(
         df,
-        x="amount_safe_to_pay",
-        nbins=25,
+        x=col_to_plot,
+        nbins=20,
         color_discrete_sequence=["#2563EB"],
-        labels={"amount_safe_to_pay": "Amount Safe to Pay Today ($)"},
+        labels={col_to_plot: label_text},
     )
 
     fig.update_layout(
         title=dict(
-            text="<b>Distribution of Safe Initial Outlay ($)</b>",
+            text="<b>Distribution of Safe Initial Outlay Ratio (% of Requested Amount)</b>",
             font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A"),
         ),
         margin=dict(l=10, r=10, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=label_text),
         yaxis=dict(showgrid=True, gridcolor="#E2E8F0", title="Number of Requests"),
         bargap=0.08,
     )
