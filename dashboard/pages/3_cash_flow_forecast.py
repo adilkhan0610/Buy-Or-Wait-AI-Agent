@@ -72,18 +72,15 @@ def render_cash_flow_page():
         dates = [e.date for e in forecast.daily_entries]
         balances = [e.closing_balance for e in forecast.daily_entries]
         
-        st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px;">
-        """, unsafe_allow_html=True)
-        render_cash_flow_trajectory(
-            dates=dates,
-            balances=balances,
-            min_balance=min_bal,
-            currency=home_curr,
-            request_date=sim_date
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.write("")
+        with st.container(border=True):
+            render_cash_flow_trajectory(
+                dates=dates,
+                balances=balances,
+                min_balance=min_bal,
+                currency=home_curr,
+                request_date=sim_date
+            )
 
         # Cash Flow Summary Metrics
         min_projected = min(balances) if balances else 0.0

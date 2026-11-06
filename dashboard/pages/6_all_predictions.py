@@ -57,7 +57,7 @@ def render_all_predictions_page():
     # Export & Row count bar
     col_count, col_download = st.columns([3, 1])
     with col_count:
-        st.markdown(f"<div style='margin-top: 8px; font-size: 14px; font-weight: 600; color: #475569;'>Showing {len(filtered_df)} of {len(pred_df)} records</div>", unsafe_allow_html=True)
+        st.caption(f"Showing **{len(filtered_df)}** of {len(pred_df)} records")
     with col_download:
         csv_bytes = pred_df.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -67,8 +67,6 @@ def render_all_predictions_page():
             mime="text/csv",
             use_container_width=True
         )
-
-    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
     # Interactive DataFrame
     st.dataframe(

@@ -53,15 +53,10 @@ def render_payment_optimizer_page():
         req_options = pd.DataFrame()
 
     with col_stats:
-        st.markdown(f"""
-        <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px; margin-top: 24px;">
-            <div style="font-size: 12px; color: #64748B;">Selected Recommendation</div>
-            <div style="margin-top: 4px;">{get_method_badge(req_row.get('recommended_payment_method'))}</div>
-            <div style="margin-top: 6px; font-size: 12px; color: #334155;">
-                <b>Payment Plan:</b> {req_row.get('payment_plan', 'none')}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            st.caption("Selected Recommendation")
+            st.markdown(get_method_badge(req_row.get('recommended_payment_method')), unsafe_allow_html=True)
+            st.markdown(f"**Plan:** `{req_row.get('payment_plan', 'none')}`")
 
     st.markdown("#### 📋 Available Provider Payment Options")
     if req_options.empty:
@@ -83,12 +78,8 @@ def render_payment_optimizer_page():
 
     # Explanation and Constraint Verification
     st.markdown("#### 🔍 Selection & Feasibility Analysis")
-    st.markdown(f"""
-    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; font-size: 14px; line-height: 1.6; color: #1E293B;">
-        <b>Engine Assessment:</b><br>
-        {req_row.get('decision_explanation', '')}
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(f"**Engine Assessment:**\n\n{req_row.get('decision_explanation', '')}")
 
 
 if __name__ == "__main__" or True:

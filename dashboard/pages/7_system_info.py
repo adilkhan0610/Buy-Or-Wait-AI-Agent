@@ -89,16 +89,13 @@ def render_system_info_page():
     """, unsafe_allow_html=True)
 
     # 3. Usage & Token Telemetry
-    st.markdown("""
-    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px;">
-        <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #0F172A;">📊 Telemetry & Token Usage Report</h3>
-    """, unsafe_allow_html=True)
-    if USAGE_REPORT_PATH.exists():
-        content = USAGE_REPORT_PATH.read_text(encoding="utf-8")
-        st.markdown(content)
-    else:
-        st.info("No usage_report.md found at evaluation/usage_report.md")
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<h3 style="margin: 0 0 12px 0; font-size: 18px; color: #0F172A;">📊 Telemetry & Token Usage Report</h3>', unsafe_allow_html=True)
+        if USAGE_REPORT_PATH.exists():
+            content = USAGE_REPORT_PATH.read_text(encoding="utf-8")
+            st.markdown(content)
+        else:
+            st.info("No usage_report.md found at evaluation/usage_report.md")
 
 
 if __name__ == "__main__" or True:

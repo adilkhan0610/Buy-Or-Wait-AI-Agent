@@ -62,14 +62,14 @@ def render_status_donut_chart(df: pd.DataFrame, height: int = 350) -> None:
     
     total = len(df)
     fig.update_layout(
-        title=dict(text="<b>Affordability Status Distribution</b>", font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        title=dict(text="<b>Affordability Status Distribution</b>", font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A")),
         annotations=[
             dict(
                 text=f"<span style='font-size:22px; font-weight:700; color:#0F172A;'>{total}</span><br><span style='font-size:12px; color:#64748B;'>Requests</span>",
                 x=0.5, y=0.5, font_size=14, showarrow=False
             )
         ],
-        margin=dict(l=20, r=20, t=50, b=20),
+        margin=dict(l=10, r=10, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
@@ -79,7 +79,7 @@ def render_status_donut_chart(df: pd.DataFrame, height: int = 350) -> None:
             y=-0.15,
             xanchor="center",
             x=0.5,
-            font=dict(size=12, family=PLOT_FONT_FAMILY, color="#334155")
+            font=dict(size=11, family=PLOT_FONT_FAMILY, color="#334155")
         )
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -124,12 +124,12 @@ def render_payment_methods_bar_chart(df: pd.DataFrame, height: int = 350) -> Non
     ))
     
     fig.update_layout(
-        title=dict(text="<b>Recommended Payment Methods</b>", font=dict(size=16, family=PLOT_FONT_FAMILY, color="#0F172A")),
-        margin=dict(l=20, r=40, t=50, b=20),
+        title=dict(text="<b>Recommended Payment Methods</b>", font=dict(size=15, family=PLOT_FONT_FAMILY, color="#0F172A")),
+        margin=dict(l=10, r=30, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=dict(text="Count", font=dict(size=12, color="#64748B"))),
+        xaxis=dict(showgrid=True, gridcolor="#E2E8F0", title=dict(text="Count", font=dict(size=11, color="#64748B"))),
         yaxis=dict(title="", tickfont=dict(size=12, color="#334155"))
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -170,14 +170,14 @@ def render_safe_amount_distribution(df: pd.DataFrame, height: int = 350) -> None
     ))
     
     fig.update_layout(
-        margin=dict(l=20, r=20, t=50, b=20),
+        margin=dict(l=10, r=10, t=40, b=10),
         height=height,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family=PLOT_FONT_FAMILY),
         xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
         yaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5)
+        legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5, font=dict(size=11))
     )
     st.plotly_chart(fig, use_container_width=True)
 

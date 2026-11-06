@@ -59,17 +59,14 @@ def render_spending_optimizer_page():
         st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
 
     # Spending Changes Rules Reference Card
-    st.markdown("""
-    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; margin-top: 24px;">
-        <h4 style="margin: 0 0 12px 0; color: #0F172A; font-size: 16px;">🛡️ Budget Optimization Constraints</h4>
-        <ul style="font-size: 13px; color: #334155; line-height: 1.8; margin: 0; padding-left: 20px;">
-            <li><b>Protected Categories:</b> Expenses in categories marked protected (e.g. rent, utilities, groceries) are strictly immutable.</li>
-            <li><b>Adjustable Categories:</b> Only flexible events in categories explicitly listed as adjustable by the user profile may be modified.</li>
-            <li><b>Action Cap:</b> Maximum of 3 spending changes per request (either <code>stop:&lt;event_id&gt;</code> or <code>reduce_to:&lt;event_id&gt;:&lt;amount&gt;</code>).</li>
-            <li><b>Liquidity Preservation:</b> The projected cash flow must remain above the user's minimum balance after implementing changes.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("#### 🛡️ Budget Optimization Constraints")
+        st.markdown(
+            "- **Protected Categories:** Expenses in categories marked protected (e.g. rent, utilities, groceries) are strictly immutable.\n"
+            "- **Adjustable Categories:** Only flexible events in categories explicitly listed as adjustable by the user profile may be modified.\n"
+            "- **Action Cap:** Maximum of 3 spending changes per request (either `stop:<event_id>` or `reduce_to:<event_id>:<amount>`).\n"
+            "- **Liquidity Preservation:** The projected cash flow must remain above the user's minimum balance after implementing changes."
+        )
 
 
 if __name__ == "__main__" or True:
